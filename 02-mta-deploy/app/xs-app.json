@@ -3,11 +3,6 @@
   "authenticationMethod": "none",
   "routes": [
     {
-      "source": "^/northwind/(.*)$",
-      "target": "$1",
-      "destination": "northwind"
-    },
-    {
       "source": ".*",
       "service": "app-front"
     }

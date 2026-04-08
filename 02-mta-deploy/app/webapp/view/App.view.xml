@@ -4,19 +4,12 @@
     xmlns="sap.m">
     <Page title="{i18n>appTitle}">
         <content>
-            <Panel headerText="Northwind Products">
-                <List
-                    id="productList"
-                    items="{/Products}"
-                    growing="true"
-                    growingThreshold="10">
-                    <StandardListItem
-                        title="{ProductName}"
-                        description="Category: {CategoryID} | In Stock: {UnitsInStock}"
-                        info="$ {UnitPrice}"
-                        infoState="Success" />
-                </List>
-            </Panel>
+            <MessagePage
+                showHeader="false"
+                icon="sap-icon://accept"
+                text="MTA Deployment Successful"
+                description="This SAPUI5 app was built with mbt and deployed to Application Frontend via cf deploy."
+                enableFormattedText="true" />
         </content>
     </Page>
 </mvc:View>

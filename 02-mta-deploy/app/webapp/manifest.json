@@ -6,16 +6,7 @@
       "version": "1.0.0"
     },
     "title": "{{appTitle}}",
-    "description": "{{appDescription}}",
-    "dataSources": {
-      "northwind": {
-        "uri": "/northwind/northwind.svc/",
-        "type": "OData",
-        "settings": {
-          "odataVersion": "2.0"
-        }
-      }
-    }
+    "description": "{{appDescription}}"
   },
   "sap.ui5": {
     "rootView": {
@@ -28,12 +19,6 @@
         "type": "sap.ui.model.resource.ResourceModel",
         "settings": {
           "bundleName": "appfront.mta.demo.i18n.i18n"
-        }
-      },
-      "": {
-        "dataSource": "northwind",
-        "settings": {
-          "defaultCountMode": "Inline"
         }
       }
     }
