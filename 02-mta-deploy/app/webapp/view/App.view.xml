@@ -1,10 +1,8 @@
 <mvc:View
     controllerName="appfront.mta.demo.controller.App"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m"
-    xmlns:l="sap.ui.layout"
-    xmlns:core="sap.ui.core">
-    <Page title="Task Board" class="sapUiContentPadding">
+    xmlns="sap.m">
+    <Page title="Task Board" showFooter="true">
         <headerContent>
             <Title text="{= ${/tasks}.length + ' tasks'}" />
         </headerContent>
@@ -15,35 +13,29 @@
             </Toolbar>
         </subHeader>
         <content>
-            <IconTabBar id="iconTabBar" select=".onFilterSelect" selectedKey="all">
+            <IconTabBar id="iconTabBar" select=".onFilterSelect" selectedKey="all" class="sapUiNoContentPadding">
                 <items>
                     <IconTabFilter key="all" text="All" count="{= ${/tasks}.length}" icon="sap-icon://list" />
                     <IconTabFilter key="open" text="Open" count="{/openCount}" icon="sap-icon://pending" iconColor="Critical" />
                     <IconTabFilter key="done" text="Done" count="{/doneCount}" icon="sap-icon://accept" iconColor="Positive" />
                 </items>
+                <content>
+                    <List id="taskList" items="{/tasks}" noDataText="No tasks yet — add one above!">
+                        <ObjectListItem
+                            title="{title}"
+                            number="{priority}"
+                            numberState="{= ${priority} === 'High' ? 'Error' : (${priority} === 'Medium' ? 'Warning' : 'Success')}"
+                            type="Active"
+                            icon="{= ${done} ? 'sap-icon://accept' : 'sap-icon://circle-task-2'}"
+                            press=".onToggleTask">
+                            <attributes>
+                                <ObjectAttribute text="{category}" />
+                                <ObjectAttribute text="{= ${done} ? 'Completed' : 'Open'}" />
+                            </attributes>
+                        </ObjectListItem>
+                    </List>
+                </content>
             </IconTabBar>
-            <List id="taskList" items="{/tasks}" noDataText="No tasks yet — add one above!">
-                <CustomListItem type="Active" press=".onToggleTask">
-                    <HBox alignItems="Center" class="sapUiSmallMargin">
-                        <core:Icon
-                            src="{= ${done} ? 'sap-icon://accept' : 'sap-icon://circle-task-2'}"
-                            color="{= ${done} ? 'Positive' : 'Default'}"
-                            size="1.5rem"
-                            class="sapUiSmallMarginEnd" />
-                        <VBox class="sapUiSmallMarginEnd" width="100%">
-                            <Title
-                                text="{title}"
-                                level="H5"
-                                class="{= ${done} ? 'taskDone' : ''}" />
-                            <Label text="{category}" class="sapUiTinyMarginTop" />
-                        </VBox>
-                        <ObjectStatus
-                            text="{= ${priority} === 'High' ? 'High' : (${priority} === 'Medium' ? 'Medium' : 'Low')}"
-                            state="{= ${priority} === 'High' ? 'Error' : (${priority} === 'Medium' ? 'Warning' : 'Success')}" />
-                        <Button icon="sap-icon://delete" type="Transparent" press=".onDeleteTask" class="sapUiSmallMarginBegin" tooltip="Delete" />
-                    </HBox>
-                </CustomListItem>
-            </List>
         </content>
         <footer>
             <Toolbar>
