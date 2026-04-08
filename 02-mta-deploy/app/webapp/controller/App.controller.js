@@ -6,6 +6,16 @@ sap.ui.define([
 ], function (Controller, JSONModel, Filter, FilterOperator) {
     "use strict";
 
+    // #region agent log
+    var _dbg = [];
+    function dbg(msg, data) {
+        _dbg.push(msg + ": " + JSON.stringify(data));
+        var el = document.getElementById("__debugPanel");
+        if (el) { el.textContent = _dbg.join("\n"); }
+    }
+    window.__dbg = dbg;
+    // #endregion
+
     function enrichTask(t) {
         t.statusIcon = t.done ? "sap-icon://accept" : "sap-icon://circle-task-2";
         t.priorityState = t.priority === "High" ? "Error" : (t.priority === "Medium" ? "Warning" : "Success");
@@ -14,6 +24,10 @@ sap.ui.define([
 
     return Controller.extend("appfront.mta.demo.controller.App", {
         onInit: function () {
+            // #region agent log
+            dbg("H5:onInit", "fired");
+            // #endregion
+
             var aTasks = [
                 { title: "Review Q2 budget proposal", done: false, category: "Work", priority: "High" },
                 { title: "Book team offsite venue", done: false, category: "Work", priority: "Medium" },
@@ -23,7 +37,51 @@ sap.ui.define([
                 { title: "Complete SAP BTP tutorial", done: true, category: "Learning", priority: "High" }
             ].map(enrichTask);
 
-            this.getView().setModel(new JSONModel({ tasks: aTasks }));
+            var oModel = new JSONModel({ tasks: aTasks });
+            this.getView().setModel(oModel);
+
+            // #region agent log
+            dbg("H3:modelSet", { taskCount: aTasks.length, firstTitle: aTasks[0].title });
+            // #endregion
+
+            var that = this;
+            setTimeout(function () {
+                // #region agent log
+                var el = document.createElement("pre");
+                el.id = "__debugPanel";
+                el.style.cssText = "position:fixed;bottom:0;left:0;right:0;background:#111;color:#0f0;padding:10px;font-size:12px;z-index:99999;max-height:40vh;overflow:auto;";
+                document.body.appendChild(el);
+                // #endregion
+
+                var oList = that.byId("taskList");
+                var oBinding = oList ? oList.getBinding("items") : null;
+                var aItems = oList ? oList.getItems() : [];
+                var oDom = oList ? oList.getDomRef() : null;
+
+                // #region agent log
+                dbg("H1:listState", {
+                    listExists: !!oList,
+                    bindingExists: !!oBinding,
+                    bindingLength: oBinding ? oBinding.getLength() : null,
+                    renderedItemCount: aItems.length,
+                    firstItemText: aItems.length > 0 ? aItems[0].getTitle() : null,
+                    listDomExists: !!oDom,
+                    listHeight: oDom ? oDom.offsetHeight : null,
+                    listParentClass: oDom && oDom.parentElement ? oDom.parentElement.className : null,
+                    listParentHeight: oDom && oDom.parentElement ? oDom.parentElement.offsetHeight : null
+                });
+                // #endregion
+
+                // #region agent log
+                if (oDom) {
+                    dbg("H2:listHTML", oDom.innerHTML.substring(0, 800));
+                }
+                // #endregion
+
+                // #region agent log
+                el.textContent = _dbg.join("\n");
+                // #endregion
+            }, 3000);
         },
 
         onAddTask: function () {

@@ -1,0 +1,55 @@
+# Generic AppFront deploy pipeline.
+# Drop this into any repo and configure the secrets + variables below.
+#
+# Required secrets:
+#   APPFRONT_SERVICE_KEY  - JSON service key from BTP (app-front service instance)
+#
+# Required variables (Settings > Variables > Actions):
+#   APPFRONT_API_URL      - e.g. https://api.eu10.dt.appfront.cloud.sap
+#   APP_PATH              - path to the static app folder, e.g. "dist" or "webapp"
+#
+# Optional variables:
+#   BUILD_COMMAND         - e.g. "npm run build" (leave empty to skip build)
+
+name: Deploy to AppFront (Generic)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        if: vars.BUILD_COMMAND != ''
+        run: npm ci
+
+      - name: Build
+        if: vars.BUILD_COMMAND != ''
+        run: ${{ vars.BUILD_COMMAND }}
+
+      - name: Install afctl
+        run: npm install -g @sap/appfront-cli
+
+      - name: Init app (if not already initialized)
+        run: |
+          if [ ! -f "${{ vars.APP_PATH }}/manifest.json" ]; then
+            afctl init "${{ vars.APP_PATH }}" --force
+          fi
+
+      - name: Login
+        run: |
+          echo '${{ secrets.APPFRONT_SERVICE_KEY }}' > /tmp/sk.json
+          afctl login --service-key /tmp/sk.json -a "${{ vars.APPFRONT_API_URL }}"
+          rm /tmp/sk.json
+
+      - name: Deploy
+        run: afctl push "${{ vars.APP_PATH }}" --activate

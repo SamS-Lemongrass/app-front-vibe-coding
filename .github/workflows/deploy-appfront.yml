@@ -1,0 +1,89 @@
+name: Deploy to Application Frontend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '01-simple-deploy/**'
+      - '02-mta-deploy/app/webapp/**'
+  workflow_dispatch:
+    inputs:
+      app:
+        description: 'Which app to deploy'
+        required: true
+        type: choice
+        options:
+          - 01-simple-deploy
+          - 02-mta-deploy
+
+env:
+  AFCTL_API: https://api.eu10.dt.appfront.cloud.sap
+  NODE_VERSION: '22'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      simple: ${{ steps.changes.outputs.simple }}
+      mta: ${{ steps.changes.outputs.mta }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: changes
+        if: github.event_name == 'push'
+        with:
+          filters: |
+            simple:
+              - '01-simple-deploy/**'
+            mta:
+              - '02-mta-deploy/app/webapp/**'
+
+  deploy-simple:
+    needs: detect-changes
+    if: >
+      (github.event_name == 'push' && needs.detect-changes.outputs.simple == 'true') ||
+      (github.event_name == 'workflow_dispatch' && inputs.app == '01-simple-deploy')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install afctl
+        run: npm install -g @sap/appfront-cli
+
+      - name: Login to Application Frontend
+        run: |
+          echo '${{ secrets.APPFRONT_SERVICE_KEY }}' > /tmp/sk.json
+          afctl login --service-key /tmp/sk.json -a ${{ env.AFCTL_API }}
+          rm /tmp/sk.json
+
+      - name: Deploy 01-simple-deploy
+        run: afctl push 01-simple-deploy/webapp --activate
+
+  deploy-mta:
+    needs: detect-changes
+    if: >
+      (github.event_name == 'push' && needs.detect-changes.outputs.mta == 'true') ||
+      (github.event_name == 'workflow_dispatch' && inputs.app == '02-mta-deploy')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install afctl
+        run: npm install -g @sap/appfront-cli
+
+      - name: Login to Application Frontend
+        run: |
+          echo '${{ secrets.APPFRONT_MTA_SERVICE_KEY }}' > /tmp/sk.json
+          afctl login --service-key /tmp/sk.json -a ${{ env.AFCTL_API }}
+          rm /tmp/sk.json
+
+      - name: Deploy 02-mta-deploy
+        run: afctl push 02-mta-deploy/app/webapp --activate
