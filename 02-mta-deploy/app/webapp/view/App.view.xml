@@ -1,15 +1,27 @@
 <mvc:View
     controllerName="appfront.mta.demo.controller.App"
     xmlns:mvc="sap.ui.core.mvc"
-    xmlns="sap.m">
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout">
     <Page title="{i18n>appTitle}">
         <content>
-            <MessagePage
-                showHeader="false"
-                icon="sap-icon://accept"
-                text="MTA Deployment Successful"
-                description="This SAPUI5 app was built with mbt and deployed to Application Frontend via cf deploy."
-                enableFormattedText="true" />
+            <l:VerticalLayout class="sapUiContentPadding" width="100%">
+                <Title text="Deployment Successful" level="H1" class="sapUiMediumMarginBottom" />
+                <Text text="This SAPUI5 application was built with mbt build and deployed to SAP Application Frontend via cf deploy." class="sapUiSmallMarginBottom" />
+                <ObjectStatus text="Status: Running" state="Success" icon="sap-icon://accept" class="sapUiSmallMarginBottom" />
+                <Panel headerText="Deployment Details">
+                    <l:VerticalLayout class="sapUiContentPadding">
+                        <Label text="App ID" />
+                        <Text text="appfront.mta.demo" />
+                        <Label text="Version" class="sapUiSmallMarginTop" />
+                        <Text text="1.0.0" />
+                        <Label text="Deploy Method" class="sapUiSmallMarginTop" />
+                        <Text text="MTA (Multi-Target Application)" />
+                        <Label text="Service" class="sapUiSmallMarginTop" />
+                        <Text text="SAP Application Frontend (app-front)" />
+                    </l:VerticalLayout>
+                </Panel>
+            </l:VerticalLayout>
         </content>
     </Page>
 </mvc:View>
