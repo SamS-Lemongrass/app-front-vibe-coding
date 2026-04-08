@@ -1,0 +1,131 @@
+# ============================================================================
+# SAP Application Frontend - GitHub Actions Deploy Template
+# ============================================================================
+#
+# Copy this file to .github/workflows/deploy.yml in any project.
+#
+# Works with: Vite, React, Angular, Vue, UI5, Next.js, plain HTML, or any
+# framework that produces static output.
+#
+# ── Setup (one-time) ────────────────────────────────────────────────────────
+#
+# 1. In BTP Cockpit, create a service key for your app-front service instance
+#    (or use an existing one from `cf service-key <instance> <key-name>`)
+#
+# 2. In your GitHub repo → Settings → Secrets and variables → Actions:
+#
+#    SECRETS (required):
+#      APPFRONT_SERVICE_KEY    Full JSON service key from step 1
+#
+#    VARIABLES (required):
+#      APPFRONT_API_URL        API endpoint, e.g. https://api.eu10.dt.appfront.cloud.sap
+#
+#    VARIABLES (optional):
+#      APP_BUILD_PATH          Output folder after build (default: "dist")
+#      APP_NAME                App name for afctl init (default: repo name)
+#      APP_VERSION             Version label (default: "v1")
+#      BUILD_COMMAND           Custom build command (default: "npm run build")
+#      SKIP_BUILD              Set to "true" for pre-built or plain HTML projects
+#      NODE_VERSION            Node.js version (default: "22")
+#
+# ── How it works ────────────────────────────────────────────────────────────
+#
+#   push to main → install deps → build → afctl init → afctl login → afctl push
+#
+#   For plain HTML (no build step): set SKIP_BUILD=true and APP_BUILD_PATH
+#   to your static files folder (e.g. "public" or "webapp").
+#
+# ============================================================================
+
+name: Deploy to Application Frontend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: appfront-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    environment: production
+
+    env:
+      APP_PATH: ${{ vars.APP_BUILD_PATH || 'dist' }}
+      SKIP: ${{ vars.SKIP_BUILD || 'false' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || '22' }}
+          cache: 'npm'
+
+      # ── Build ──────────────────────────────────────────────────────────
+
+      - name: Install dependencies
+        if: env.SKIP != 'true'
+        run: npm ci
+
+      - name: Build
+        if: env.SKIP != 'true'
+        run: ${{ vars.BUILD_COMMAND || 'npm run build' }}
+
+      # ── Deploy ─────────────────────────────────────────────────────────
+
+      - name: Install afctl
+        run: npm install -g @sap/appfront-cli
+
+      - name: Initialize for Application Frontend
+        run: |
+          if [ ! -f "${{ env.APP_PATH }}/manifest.json" ]; then
+            APP="${{ vars.APP_NAME || github.event.repository.name }}"
+            VER="${{ vars.APP_VERSION || 'v1' }}"
+            afctl init "${{ env.APP_PATH }}" --name "$APP" --version "$VER" --force
+          fi
+
+      - name: Login to Application Frontend
+        run: |
+          echo '${{ secrets.APPFRONT_SERVICE_KEY }}' > /tmp/sk.json
+          afctl login --service-key /tmp/sk.json -a "${{ vars.APPFRONT_API_URL }}"
+          rm -f /tmp/sk.json
+
+      - name: Push to Application Frontend
+        run: |
+          afctl push "${{ env.APP_PATH }}" --activate
+          echo "## Deployed to Application Frontend" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Deployment completed successfully." >> $GITHUB_STEP_SUMMARY
+
+  # ── Dry-run on PRs (validates build only) ────────────────────────────────
+
+  validate:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ vars.NODE_VERSION || '22' }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        if: vars.SKIP_BUILD != 'true'
+        run: npm ci
+
+      - name: Build (validate)
+        if: vars.SKIP_BUILD != 'true'
+        run: ${{ vars.BUILD_COMMAND || 'npm run build' }}
+
+      - run: echo "Build validated successfully" >> $GITHUB_STEP_SUMMARY
