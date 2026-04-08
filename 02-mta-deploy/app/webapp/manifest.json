@@ -1,0 +1,41 @@
+{
+  "sap.app": {
+    "id": "appfront.mta.demo",
+    "type": "application",
+    "applicationVersion": {
+      "version": "1.0.0"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "dataSources": {
+      "northwind": {
+        "uri": "/northwind/northwind.svc/",
+        "type": "OData",
+        "settings": {
+          "odataVersion": "2.0"
+        }
+      }
+    }
+  },
+  "sap.ui5": {
+    "rootView": {
+      "viewName": "appfront.mta.demo.view.App",
+      "type": "XML",
+      "id": "appView"
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "appfront.mta.demo.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "northwind",
+        "settings": {
+          "defaultCountMode": "Inline"
+        }
+      }
+    }
+  }
+}

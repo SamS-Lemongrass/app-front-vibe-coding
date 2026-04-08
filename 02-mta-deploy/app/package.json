@@ -1,0 +1,12 @@
+{
+  "name": "appfront-mta-demo-app",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "ui5 build --all --clean-dest"
+  },
+  "devDependencies": {
+    "@ui5/cli": "^4",
+    "ui5-task-zipper": "^3"
+  }
+}

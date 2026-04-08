@@ -1,0 +1,7 @@
+node_modules/
+dist/
+resources/
+mta_archives/
+.02-mta-deploy_mta_build_tmp/
+*.mtar
+Makefile_*.mta

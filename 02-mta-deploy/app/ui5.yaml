@@ -1,0 +1,19 @@
+specVersion: "3.0"
+metadata:
+  name: appfront-mta-demo-app
+type: application
+framework:
+  name: SAPUI5
+  version: "1.130.0"
+  libraries:
+    - name: sap.m
+    - name: sap.ui.core
+    - name: sap.ui.layout
+builder:
+  customTasks:
+    - name: ui5-task-zipper
+      afterTask: generateVersionInfo
+      configuration:
+        archiveName: appfront-mta-demo-app
+        additionalFiles:
+          - xs-app.json

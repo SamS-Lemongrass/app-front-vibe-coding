@@ -1,0 +1,22 @@
+<mvc:View
+    controllerName="appfront.mta.demo.controller.App"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns="sap.m">
+    <Page title="{i18n>appTitle}">
+        <content>
+            <Panel headerText="Northwind Products">
+                <List
+                    id="productList"
+                    items="{/Products}"
+                    growing="true"
+                    growingThreshold="10">
+                    <StandardListItem
+                        title="{ProductName}"
+                        description="Category: {CategoryID} | In Stock: {UnitsInStock}"
+                        info="$ {UnitPrice}"
+                        infoState="Success" />
+                </List>
+            </Panel>
+        </content>
+    </Page>
+</mvc:View>
