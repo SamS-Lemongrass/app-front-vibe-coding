@@ -2,26 +2,54 @@
     controllerName="appfront.mta.demo.controller.App"
     xmlns:mvc="sap.ui.core.mvc"
     xmlns="sap.m"
-    xmlns:l="sap.ui.layout">
-    <Page title="{i18n>appTitle}">
+    xmlns:l="sap.ui.layout"
+    xmlns:core="sap.ui.core">
+    <Page title="Task Board" class="sapUiContentPadding">
+        <headerContent>
+            <Title text="{= ${/tasks}.length + ' tasks'}" />
+        </headerContent>
+        <subHeader>
+            <Toolbar>
+                <Input id="newTaskInput" placeholder="Add a new task..." width="100%" submit=".onAddTask" />
+                <Button icon="sap-icon://add" type="Emphasized" press=".onAddTask" tooltip="Add Task" />
+            </Toolbar>
+        </subHeader>
         <content>
-            <l:VerticalLayout class="sapUiContentPadding" width="100%">
-                <Title text="Deployment Successful" level="H1" class="sapUiMediumMarginBottom" />
-                <Text text="This SAPUI5 application was built with mbt build and deployed to SAP Application Frontend via cf deploy." class="sapUiSmallMarginBottom" />
-                <ObjectStatus text="Status: Running" state="Success" icon="sap-icon://accept" class="sapUiSmallMarginBottom" />
-                <Panel headerText="Deployment Details">
-                    <l:VerticalLayout class="sapUiContentPadding">
-                        <Label text="App ID" />
-                        <Text text="appfront.mta.demo" />
-                        <Label text="Version" class="sapUiSmallMarginTop" />
-                        <Text text="1.0.0" />
-                        <Label text="Deploy Method" class="sapUiSmallMarginTop" />
-                        <Text text="MTA (Multi-Target Application)" />
-                        <Label text="Service" class="sapUiSmallMarginTop" />
-                        <Text text="SAP Application Frontend (app-front)" />
-                    </l:VerticalLayout>
-                </Panel>
-            </l:VerticalLayout>
+            <IconTabBar id="iconTabBar" select=".onFilterSelect" selectedKey="all">
+                <items>
+                    <IconTabFilter key="all" text="All" count="{= ${/tasks}.length}" icon="sap-icon://list" />
+                    <IconTabFilter key="open" text="Open" count="{/openCount}" icon="sap-icon://pending" iconColor="Critical" />
+                    <IconTabFilter key="done" text="Done" count="{/doneCount}" icon="sap-icon://accept" iconColor="Positive" />
+                </items>
+            </IconTabBar>
+            <List id="taskList" items="{/tasks}" noDataText="No tasks yet — add one above!">
+                <CustomListItem type="Active" press=".onToggleTask">
+                    <HBox alignItems="Center" class="sapUiSmallMargin">
+                        <core:Icon
+                            src="{= ${done} ? 'sap-icon://accept' : 'sap-icon://circle-task-2'}"
+                            color="{= ${done} ? 'Positive' : 'Default'}"
+                            size="1.5rem"
+                            class="sapUiSmallMarginEnd" />
+                        <VBox class="sapUiSmallMarginEnd" width="100%">
+                            <Title
+                                text="{title}"
+                                level="H5"
+                                class="{= ${done} ? 'taskDone' : ''}" />
+                            <Label text="{category}" class="sapUiTinyMarginTop" />
+                        </VBox>
+                        <ObjectStatus
+                            text="{= ${priority} === 'High' ? 'High' : (${priority} === 'Medium' ? 'Medium' : 'Low')}"
+                            state="{= ${priority} === 'High' ? 'Error' : (${priority} === 'Medium' ? 'Warning' : 'Success')}" />
+                        <Button icon="sap-icon://delete" type="Transparent" press=".onDeleteTask" class="sapUiSmallMarginBegin" tooltip="Delete" />
+                    </HBox>
+                </CustomListItem>
+            </List>
         </content>
+        <footer>
+            <Toolbar>
+                <ToolbarSpacer />
+                <Button text="Clear Completed" type="Reject" press=".onClearCompleted" />
+            </Toolbar>
+        </footer>
     </Page>
 </mvc:View>
